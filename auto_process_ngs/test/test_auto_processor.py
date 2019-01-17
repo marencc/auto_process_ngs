@@ -521,8 +521,6 @@ class TestAutoProcessSetup(unittest.TestCase):
         self.assertEqual(ap.metadata.instrument_run_number,"1")
         self.assertEqual(ap.metadata.instrument_flow_cell_id,
                          "000000000-ABCDE1")
-        # Delete to force write of data to disk
-        del(ap)
         # Check directory exists
         self.assertTrue(os.path.isdir(analysis_dirn))
         # Check files exists
@@ -624,21 +622,18 @@ class TestAutoProcessSetup(unittest.TestCase):
         ap.setup(data_dir_abs)
         self.assertEqual(ap.params.data_dir,data_dir_abs)
         self.assertEqual(ap.analysis_dir,analysis_dir)
-        del(ap)
         shutil.rmtree(analysis_dir)
         # Do setup using relative path
         ap = AutoProcess()
         ap.setup(data_dir_rel)
         self.assertEqual(ap.params.data_dir,data_dir_abs)
         self.assertEqual(ap.analysis_dir,analysis_dir)
-        del(ap)
         shutil.rmtree(analysis_dir)
         # Do setup using absolute unnormalized path
         ap = AutoProcess()
         ap.setup(data_dir_abs_unnormalised)
         self.assertEqual(ap.params.data_dir,data_dir_abs)
         self.assertEqual(ap.analysis_dir,analysis_dir)
-        del(ap)
 
     def test_autoprocess_setup_missing_data_directory(self):
         """AutoProcess.setup raises exception if data directory is missing
@@ -720,8 +715,6 @@ class TestAutoProcessSetup(unittest.TestCase):
         self.assertEqual(ap.metadata.instrument_run_number,"1")
         self.assertEqual(ap.metadata.instrument_flow_cell_id,
                          "000000000-ABCDE1")
-        # Delete to force write of data to disk
-        del(ap)
         # Check directory exists
         self.assertTrue(os.path.isdir(analysis_dirn))
         # Check files exists
