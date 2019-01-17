@@ -976,6 +976,8 @@ class AutoProcess(object):
         # Set flags to allow parameters etc to be saved back
         self._save_params = True
         self._save_metadata = True
+        # Save the parameters and metadata to disk
+        self.save()
 
     def setup_from_fastq_dir(self,analysis_dir,fastq_dir):
         # Do setup for an existing directory containing fastq files
