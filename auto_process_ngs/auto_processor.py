@@ -23,6 +23,7 @@ import time
 import ast
 import gzip
 import urllib2
+import atexit
 import bcftbx.IlluminaData as IlluminaData
 import bcftbx.TabFile as TabFile
 import bcftbx.utils as bcf_utils
@@ -178,6 +179,9 @@ class AutoProcess(object):
                 logging.error("Failed to load metadata: %s" % ex)
                 logging.error("Stopping")
                 sys.exit(1)
+        # Register cleanup and save functions on exit
+        atexit.register(self.save)
+        atexit.register(self.clean_up_tmp)
 
     def add_directory(self,sub_dir):
         # Add a directory to the AutoProcess object
@@ -589,35 +593,36 @@ class AutoProcess(object):
             name,
             parent_dir=os.path.join(self.analysis_dir,self._master_log_dir))
 
-    def __del__(self):
+    def save(self):
         """
-        Implement __del__ method
-
-        Peforms clean up operations (e.g. save parameters,
-        remove temporary files etc) when the AutoProcess
-        object is destroyed.
-
+        Save parameters and metadata
         """
-        if self.analysis_dir is None:
-            return
         try:
-            if not os.path.exists(self.analysis_dir):
-                logging.warning("Analysis dir '%s' not found" %
-                                self.analysis_dir)
+            logging.debug("Saving parameters to file")
+            self.save_parameters()
+            logging.debug("Saving metadata to file")
+            self.save_metadata()
+        except Exception as ex:
+            logging.error("Exception trying to save data for "
+                          "AutoProcess instance: %s" % ex)
+
+    def clean_up_tmp(self):
+        """
+        Remove the temporary area
+        """
+        logging.debug("Cleaning up temporary area")
+        try:
+            if not self.analysis_dir:
                 return
             tmp_dir = os.path.join(self.analysis_dir,'tmp')
             if os.path.isdir(tmp_dir):
                 logging.debug("Removing %s" % tmp_dir)
                 import shutil
                 shutil.rmtree(tmp_dir)
-            logging.debug("Saving parameters to file")
-            self.save_parameters()
-            logging.debug("Saving metadata to file")
-            self.save_metadata()
         except Exception as ex:
-            logging.warning("Exception trying to delete "
-                            "AutoProcess instance: %s" %
-                            ex)
+            logging.error("Exception trying to remove temporary "
+                          "directory for AutoProcess instance: %s" %
+                          ex)
 
     @property
     def run_name(self):
