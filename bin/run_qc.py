@@ -22,6 +22,7 @@ import os
 import argparse
 import logging
 from bcftbx.JobRunner import fetch_runner
+from bcftbx.JobRunner import SimpleJobRunner
 from auto_process_ngs.analysis import AnalysisProject
 import auto_process_ngs
 import auto_process_ngs.settings
@@ -153,6 +154,11 @@ if __name__ == "__main__":
                    "modules to load before executing commands "
                    "(overrides any modules specified in the global "
                    "settings)")
+    p.add_argument('--local',action='store_true',
+                   dest='local',default=False,
+                   help="run the QC on the local system (overrides "
+                   "any runners defined in the configuration or on "
+                   "the command line")
 
     # Parse the command line
     args = p.parse_args()
@@ -179,11 +185,17 @@ if __name__ == "__main__":
             envmodules[name] = None
 
     # Job runners
-    default_runner = __settings.general.default_runner
-    if args.runner:
-        qc_runner = fetch_runner(args.runner)
+    if args.local:
+        print("Running locally (overriding configuration and "
+              "ignoring command line settings)")
+        default_runner = SimpleJobRunner()
+        qc_runner = default_runner
     else:
-        qc_runner = self._settings.runners.qc
+        default_runner = __settings.general.default_runner
+        if args.runner:
+            qc_runner = fetch_runner(args.runner)
+        else:
+            qc_runner = self._settings.runners.qc
     verify_runner = default_runner
     report_runner = default_runner
 
